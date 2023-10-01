@@ -5,7 +5,7 @@ const db = new PrismaClient();
 const deleteUsers = async () => {
   try {
     // Define the email you want to match for deletion
-    const emailToDelete = "radhakrishnan@taxnodes.com";
+    const emailToDelete = "radhakrishnankannan1110@gmail.com";
 
     // Find the user with the matching email
     const userToDelete = await db.user.findUnique({
@@ -79,5 +79,5 @@ const deleteUsers = async () => {
   }
 };
 
-// Call the function to seed system users
+// Call the function to delete the db enteries of the user
 deleteUsers();
