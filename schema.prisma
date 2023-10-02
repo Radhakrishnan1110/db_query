@@ -8,16 +8,16 @@ datasource db {
 }
 
 model UserAccount {
-  id              Int             @id @unique @default(autoincrement())
-  UserRel         User            @relation(fields: [userId], references: [id])
-  userId          Int             @unique @map("user_id")
-  parentAccount   Int?            @map("parent_account")
-  accountType     UserAccountType @default(MAIN) @map("account_type")
-  isActive        Boolean         @default(true) @map("is_active")
-  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamp()
-  createdBy       Int?            @map("created_by")
-  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
-  updatedBy       Int?            @map("updated_by")
+  id              Int                    @id @unique @default(autoincrement())
+  UserRel         User                   @relation(fields: [userId], references: [id])
+  userId          Int                    @unique @map("user_id")
+  parentAccount   Int?                   @map("parent_account")
+  accountType     UserAccountType        @default(MAIN) @map("account_type")
+  isActive        Boolean                @default(true) @map("is_active")
+  createdAt       DateTime               @default(now()) @map("created_at") @db.Timestamp()
+  createdBy       Int?                   @map("created_by")
+  updatedAt       DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
+  updatedBy       Int?                   @map("updated_by")
   InrLedgerRel    InrLedger[]
   CryptoLedgerRel CryptoLedger[]
   TradeLedgerRel  TradeLedger[]
@@ -105,8 +105,12 @@ model UserKyc {
   encryptedUserDataId      Int?               @unique @map("encrypted_user_data_id")
   EncryptedUserDataRel     EncryptedUserData? @relation(fields: [encryptedUserDataId], references: [id])
   fullName                 String?            @map("full_name")
+  aadharName               String?            @map("aadhar_name")
+  panName                  String?            @map("pan_name")
   gender                   Gender?            @map("gender")
-  dob                      String?            @map("dob")
+  aadharDob                String?            @map("aadhar_dob")
+  panDob                   String?            @map("pan_dob")
+  panNumber                String?            @unique @map("pan_number")
   address                  String?            @map("address")
   fatherName               String?            @map("father_name")
   kycType                  KycType            @map("kyc_type")
@@ -117,6 +121,7 @@ model UserKyc {
   aadharBackStatus         UserKycStatus      @default(PENDING) @map("aadhar_back_status")
   selfieStatus             UserKycStatus      @default(PENDING) @map("selfie_status")
   aadharPanNameMatchStatus UserKycStatus      @default(PENDING) @map("aadhar_pan_name_match_status")
+  aadharSelfieMatchStatus  UserKycStatus      @default(PENDING) @map("aadhar_selfie_match_status")
   createdAt                DateTime           @default(now()) @map("created_at") @db.Timestamp()
   createdBy                Int                @map("created_by")
   updatedAt                DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
@@ -126,8 +131,8 @@ model UserKyc {
 
 model EncryptedUserData {
   id           Int      @id @unique @default(autoincrement())
-  panNumber    String?  @unique @map("pan_number")
-  aadharNumber String?  @unique @map("aadhar_number")
+  panNumber    String?  @map("pan_number")
+  aadharNumber String?  @map("aadhar_number")
   userId       Int      @map("user_id")
   fileKey      String?  @map("file_key")
   bucketName   String?  @map("bucket_name")
@@ -140,23 +145,24 @@ model EncryptedUserData {
 }
 
 model UserBankDetails {
-  id                     Int                    @id @unique @default(autoincrement())
-  bankDetailsType        BankDetailsType        @default(REGULAR) @map("bank_details_type")
-  userId                 Int?                   @map("user_id")
-  userRel                User?                  @relation(fields: [userId], references: [id])
-  bankAccountNumber      String?                @unique @map("bank_account_number")
-  bankName               String?                @map("bank_name")
-  accountHolderName      String?                @map("account_holder_name")
-  ifsc                   String?                @map("ifsc")
-  bankVerificationStatus BankVerificationStatus @default(PENDING) @map("bank_verification_status")
-  isActive               Boolean                @default(false) @map("is_active")
-  createdAt              DateTime               @default(now()) @map("created_at") @db.Timestamp()
-  createdBy              Int                    @map("created_by")
-  updatedAt              DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
-  updatedBy              Int?                   @map("updated_by")
-  UserBankRel            FiatPayments[]         @relation(name: "FiatToBankDetails")
-  FiatPaymentsRel        FiatPayments[]
-  UserRel                User[]                 @relation(name: "UserToBankDetails")
+  id                              Int                    @id @unique @default(autoincrement())
+  bankDetailsType                 BankDetailsType        @default(REGULAR) @map("bank_details_type")
+  userId                          Int?                   @map("user_id")
+  userRel                         User?                  @relation(fields: [userId], references: [id])
+  bankAccountNumber               String?                @unique @map("bank_account_number")
+  bankName                        String?                @map("bank_name")
+  accountHolderName               String?                @map("account_holder_name")
+  ifsc                            String?                @map("ifsc")
+  bankVerificationStatus          BankVerificationStatus @default(PENDING) @map("bank_verification_status")
+  panAccountHolderNameMatchStatus UserKycStatus          @default(PENDING) @map("pan_account_holder_name_match_status")
+  isActive                        Boolean                @default(false) @map("is_active")
+  createdAt                       DateTime               @default(now()) @map("created_at") @db.Timestamp()
+  createdBy                       Int                    @map("created_by")
+  updatedAt                       DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
+  updatedBy                       Int?                   @map("updated_by")
+  UserBankRel                     FiatPayments[]         @relation(name: "FiatToBankDetails")
+  FiatPaymentsRel                 FiatPayments[]
+  UserRel                         User[]                 @relation(name: "UserToBankDetails")
 }
 
 model FiatPayments {
@@ -187,60 +193,59 @@ model FiatPayments {
 }
 
 model CryptoDeposit {
-  id                     Int            @id @unique @default(autoincrement())
-  accountId              Int            @map("account_id")
-  cryptoWalletId         Int            @map("crypto_wallet_id")
-  cryptoWallet           CryptoWallet?  @relation(fields: [cryptoWalletId], references: [id])
-  liminalTxnRefId        String         @unique @map("liminal_txn_ref_id")
-  coin                   String         @map("coin")
-  walletId               Int            @map("walletId")
-  timestamp              String         @map("date")
-  fee                    String?        @map("fee")
-  effectiveChange        String?        @map("effective_change")
-  runningBalance         String?        @map("running_balance")
-  externalAddress        String?        @map("external_address")
-  effectiveChangeUsd     String?        @map("effective_change_usd")
-  wallet                 Json?          @map("wallet")
-  tokenContractAddress   String?        @map("token_contract_address")
-  explorerLink           String?        @map("explorer_link")
-  inputs                 Json[]         @default([]) @map("inputs")
-  outputs                Json[]         @default([]) @map("outputs")
-  sequenceId             String?        @map("sequence_id")
-  type                   String?        @map("type")
-  conversionRate         String?        @map("conversion_rate")
-  isConverted            Boolean?       @map("is_converted")
-  conversionTimestamp    DateTime?      @map("conversion_timestamp")
-  inrCreditStatus        InrCreditStatus @default(PENDING) @map("inr_credit_status")
-  createdAt              DateTime       @default(now()) @map("created_at") @db.Timestamp()
-  createdBy              Int            @map("created_by")
-  updatedAt              DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
-  updatedBy              Int            @map("updated_by")
-  inrConvHistRel         InrConversionHistory[]
+  id                   Int                    @id @unique @default(autoincrement())
+  accountId            Int                    @map("account_id")
+  cryptoWalletId       Int                    @map("crypto_wallet_id")
+  cryptoWallet         CryptoWallet?          @relation(fields: [cryptoWalletId], references: [id])
+  liminalTxnRefId      String                 @unique @map("liminal_txn_ref_id")
+  coin                 String                 @map("coin")
+  walletId             Int                    @map("walletId")
+  timestamp            String                 @map("date")
+  fee                  String?                @map("fee")
+  effectiveChange      String?                @map("effective_change")
+  runningBalance       String?                @map("running_balance")
+  externalAddress      String?                @map("external_address")
+  effectiveChangeUsd   String?                @map("effective_change_usd")
+  wallet               Json?                  @map("wallet")
+  tokenContractAddress String?                @map("token_contract_address")
+  explorerLink         String?                @map("explorer_link")
+  inputs               Json[]                 @default([]) @map("inputs")
+  outputs              Json[]                 @default([]) @map("outputs")
+  sequenceId           String?                @map("sequence_id")
+  type                 String?                @map("type")
+  conversionRate       String?                @map("conversion_rate")
+  isConverted          Boolean?               @map("is_converted")
+  conversionTimestamp  DateTime?              @map("conversion_timestamp")
+  inrCreditStatus      InrCreditStatus        @default(PENDING) @map("inr_credit_status")
+  createdAt            DateTime               @default(now()) @map("created_at") @db.Timestamp()
+  createdBy            Int                    @map("created_by")
+  updatedAt            DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
+  updatedBy            Int                    @map("updated_by")
+  inrConvHistRel       InrConversionHistory[]
 
   @@index([walletId])
 }
 
-model InrConversionHistory{
-  id                    Int            @id @unique @default(autoincrement())
-  cryptoDepositId       Int?           @map("crypto_wallet_id") @unique
-  cryptoDeposit         CryptoDeposit? @relation(fields: [cryptoDepositId], references: [id])
-  accountId             Int            @map("account_id")
-  account               UserAccount    @relation(fields: [accountId], references: [id])
-  baseToken             String         @map("base_token")
-  baseTokenQuantity     Float         @map("base_token_quantity")
-  inrValue              Float         @map("inr_value")
-  inrValAfterDeduction  Float         @map("inr_val_after_deduction")
-  gst                   Float?        @map("gst")
-  txnFee                Float?        @map("txn_fee")
-  tds                   Float?        @map("tds")
-  coinConversionRate    Float?        @map("usdt_conversion_rate")
-  receivingAddress      String?        @map("receiving_address")
-  createdAt             DateTime       @default(now()) @map("created_at") @db.Timestamp()
-  createdBy             Int            @map("created_by")
-  updatedAt             DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
-  updatedBy             Int            @map("updated_by")
+model InrConversionHistory {
+  id                   Int            @id @unique @default(autoincrement())
+  cryptoDepositId      Int?           @unique @map("crypto_wallet_id")
+  cryptoDeposit        CryptoDeposit? @relation(fields: [cryptoDepositId], references: [id])
+  accountId            Int            @map("account_id")
+  account              UserAccount    @relation(fields: [accountId], references: [id])
+  baseToken            String         @map("base_token")
+  baseTokenQuantity    Float          @map("base_token_quantity")
+  inrValue             Float          @map("inr_value")
+  inrValAfterDeduction Float          @map("inr_val_after_deduction")
+  gst                  Float?         @map("gst")
+  txnFee               Float?         @map("txn_fee")
+  tds                  Float?         @map("tds")
+  coinConversionRate   Float?         @map("usdt_conversion_rate")
+  receivingAddress     String?        @map("receiving_address")
+  createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamp()
+  createdBy            Int            @map("created_by")
+  updatedAt            DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
+  updatedBy            Int            @map("updated_by")
 }
-
 
 model BankFeed {
   id            Int           @id @unique @default(autoincrement())
@@ -354,7 +359,7 @@ model InrWallet {
   id               Int          @id @unique @default(autoincrement())
   Account          UserAccount? @relation(fields: [accountId], references: [id])
   accountId        Int          @unique @map("account_id")
-  walletBalance   Float         @default(0.00) @map("wallet_balance")
+  walletBalance    Float        @default(0.00) @map("wallet_balance")
   amountAvailable  Float        @default(0.00) @map("amount_available")
   amountLocked     Float        @default(0.00) @map("amount_locked")
   unrealizedPnl    Float        @default(0.00) @map("unrealized_pnl")
@@ -367,61 +372,60 @@ model InrWallet {
   @@index([accountId])
 }
 
-
-model ParentWallet{
-  id                  Int              @id @unique @default(autoincrement())
-  walletId            Int              @map("wallet_id")
-  walletAddress       String           @map("wallet_address")
-  chain               String           @map("chain")
-  coin                String           @map("coin")
-  parentChain         String           @map("parent_chain")
-  type                String           @map("type")
-  subType             ParentWalletType @map("sub_type")
-  lastUsedIndex       Int              @map("last_used_index")
-  displayName         String?          @map("display_name")
-  toBeDisplayed       Boolean          @map("to_be_displayed") @default(false)
-  parentChainIconUrl  String?          @map("parent_chain_icon_url")
-  createdAt           DateTime         @default(now()) @map("created_at") @db.Timestamp()
-  updatedAt           DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
-  childCryptoWallet   CryptoWallet[]
-  parentWallet        StableCoin[]
+model ParentWallet {
+  id                 Int              @id @unique @default(autoincrement())
+  walletId           Int              @map("wallet_id")
+  walletAddress      String           @map("wallet_address")
+  chain              String           @map("chain")
+  coin               String           @map("coin")
+  parentChain        String           @map("parent_chain")
+  type               String           @map("type")
+  subType            ParentWalletType @map("sub_type")
+  lastUsedIndex      Int              @map("last_used_index")
+  displayName        String?          @map("display_name")
+  toBeDisplayed      Boolean          @default(false) @map("to_be_displayed")
+  parentChainIconUrl String?          @map("parent_chain_icon_url")
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamp()
+  updatedAt          DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
+  childCryptoWallet  CryptoWallet[]
+  parentWallet       StableCoin[]
 }
 
-model StableCoin{
-  id                  Int            @id @unique @default(autoincrement())
-  parentWalletId      Int            @map("parent_wallet_id")
-  parentWallet        ParentWallet   @relation(fields: [parentWalletId], references: [id])
-  token               String         @map("coin")
-  parentChain         String         @map("parent_chain")
-  tokenIconUrl        String?        @map("icon_url")
+model StableCoin {
+  id             Int          @id @unique @default(autoincrement())
+  parentWalletId Int          @map("parent_wallet_id")
+  parentWallet   ParentWallet @relation(fields: [parentWalletId], references: [id])
+  token          String       @map("coin")
+  parentChain    String       @map("parent_chain")
+  tokenIconUrl   String?      @map("icon_url")
 
-  @@unique([parentWalletId,token])
+  @@unique([parentWalletId, token])
 }
 
 model CryptoWallet {
-  id             Int             @id @unique @default(autoincrement())
-  accountId      Int?            @map("account_id")
-  account        UserAccount?    @relation(fields: [accountId], references: [id])
-  parentWalletId Int             @map("parent_wallet_id")
-  parentWallet   ParentWallet    @relation(fields: [parentWalletId], references: [id])
-  liminalRefId    String          @map("liminal_ref_id")//this path is the child path to the parent wallet path created
-  liminalParentId Int            @map("liminal_parent_id")
-  liminalCoin    String          @map("liminal_coin")
-  liminalChain   String          @map("liminal_chain")
+  id              Int             @id @unique @default(autoincrement())
+  accountId       Int?            @map("account_id")
+  account         UserAccount?    @relation(fields: [accountId], references: [id])
+  parentWalletId  Int             @map("parent_wallet_id")
+  parentWallet    ParentWallet    @relation(fields: [parentWalletId], references: [id])
+  liminalRefId    String          @map("liminal_ref_id") //this path is the child path to the parent wallet path created
+  liminalParentId Int             @map("liminal_parent_id")
+  liminalCoin     String          @map("liminal_coin")
+  liminalChain    String          @map("liminal_chain")
   //coin           Coin            @map("coin")
   //network        Network         @map("network")
-  publicAddress  String          @map("public_address")
-  balance        Float          @default(0.00) @map("balance")
-  lastConversion DateTime?       @map("last_conversion")
-  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamp()
-  createdBy      Int             @map("created_by")
-  updatedAt      DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
-  updatedBy      Int             @map("updated_by")
-  cryptoDeposit  CryptoDeposit[]
+  publicAddress   String          @map("public_address")
+  balance         Float           @default(0.00) @map("balance")
+  lastConversion  DateTime?       @map("last_conversion")
+  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamp()
+  createdBy       Int             @map("created_by")
+  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamp()
+  updatedBy       Int             @map("updated_by")
+  cryptoDeposit   CryptoDeposit[]
 
+  @@unique([liminalCoin, publicAddress])
   @@index([accountId])
   @@index([liminalRefId])
-  @@unique([liminalCoin, publicAddress])
 }
 
 model PerpetualContracts {
@@ -611,6 +615,7 @@ enum BankVerificationStatus {
   INITIATED
   VERIFIED
   REJECTED
+  NEEDS_REVIEW
 }
 
 enum InrOperation {

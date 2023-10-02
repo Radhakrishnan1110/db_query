@@ -24,6 +24,8 @@ const deleteUsers = async () => {
       },
     });
 
+    console.log({userToDelete});
+
     if (!userToDelete) {
       console.log( `User with email ${emailToDelete} is not present.`)
       return;
